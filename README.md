@@ -1,4 +1,19 @@
-# LRCLIB Lyrics Plugin for Picard
+# LRCLIB Lyrics Plugin for Picard (sidecar-only fork)
+
+> **This fork writes lyrics ONLY as sidecar files and never touches the audio.**
+> Upstream ([izaz4141/picard-lrclib](https://github.com/izaz4141/picard-lrclib)) embeds lyrics into
+> the file's tags as well and replaces existing sidecars. Here:
+>
+> - lyrics go to `Song.lrc` (synced) or `Song.txt` (plain), never into the `lyrics` tag;
+> - **automatic fetching never touches an existing `.lrc`/`.txt`**; a manual search may
+>   replace one, after asking;
+> - fetching on save no longer re-saves the audio file;
+> - defaults: fetch on **save** (after Picard moves the file into the library), plain as `.txt`,
+>   skip instrumentals.
+>
+> The changes are in `src/services/lrclib.py` and `src/options/config.py`, covered by
+> `tests/test_sidecar_only.py`. Install: `picard-cli plugins install https://github.com/spudalicious1969/picard-lrclib`
+
 
 A MusicBrainz Picard plugin to fetch lyrics from [LRCLIB](https://lrclib.net) and save them to both **audio file metadata** and **.lrc sidecar files** for Jellyfin compatibility.
 

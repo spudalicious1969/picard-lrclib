@@ -135,50 +135,49 @@ def process_response(
             )
             file_lyrics = lyrics
 
-            has_metadata_lyrics = bool(file.metadata.get("lyrics"))
-            has_lrc_file = os.path.exists(file_lrc)
-
-            if (
-                has_metadata_lyrics
-                and not has_lrc_file
-                and api.plugin_config["save_lrc_file"]
-                and method != "search"
-            ):
-                file_lyrics = file.metadata.get("lyrics")
-                assert isinstance(file_lyrics, str), "Lyrics is not of type string"
-            elif has_lrc_file and not has_metadata_lyrics and method != "search":
-                file_lyrics = read_lyrics_file(file_lrc)
-            elif (
-                (
-                    (has_metadata_lyrics and has_lrc_file)
-                    or (has_metadata_lyrics and not api.plugin_config["save_lrc_file"])
-                )
-                and (not api.plugin_config["auto_overwrite"])
-                and (method not in ["get_on_load", "get_on_save"])
-            ):
-                title = "Overwrite file lyrics?"
-                desc = (
-                    f'Overwrite Lyrics for "{file.metadata.get("title", "<file>")}".\n\n'
-                    f"{truncate_text(file_lyrics, 5, 42)}"
-                )
-                parent = getattr(api.tagger, "window", None)
-                if not confirm_yes_no(api.logger, parent, title, desc):
-                    return
-
-            file.metadata["lyrics"] = file_lyrics
-            if api.plugin_config["save_lrc_file"]:
-                write_error = write_lyrics_file(api, file_lrc, file_lyrics)
-                if write_error is not None:
-                    parent = getattr(api.tagger, "window", None)
-                    show_critical(
-                        api.logger,
-                        parent,
-                        "Failed to Save LRC File",
-                        f"Could not save lyrics file:\n\n{file_lrc}\n\n"
-                        f"Error: {write_error}",
+            # SIDECAR-ONLY FORK (spudalicious1969, 2026-11-16). Lyrics live in
+            # .lrc/.txt files next to the audio and NEVER in its tags: this
+            # library keeps exactly one lyrics method. So nothing here reads or
+            # writes file.metadata["lyrics"], and the "save .lrc file" option
+            # is implied rather than consulted.
+            #
+            # An existing sidecar was put there on purpose (LRCGET, a hand
+            # upgrade, an earlier run). Automatic runs never touch it; only a
+            # manual search may replace it, and only after asking.
+            existing = [
+                base_path + ext
+                for ext in (".lrc", ".txt")
+                if os.path.exists(base_path + ext)
+            ]
+            if existing:
+                if method != "search":
+                    api.logger.debug(
+                        f"{plugin_name(api)}: keeping existing {existing[0]}"
                     )
-                else:
-                    remove_lrc_files(api, base_path, file_lrc)
+                    continue
+                if not api.plugin_config["auto_overwrite"]:
+                    title = "Overwrite file lyrics?"
+                    desc = (
+                        f'Replace the lyrics file for "{file.metadata.get("title", "<file>")}"?\n\n'
+                        f"{truncate_text(read_lyrics_file(existing[0]), 5, 42)}"
+                    )
+                    parent = getattr(api.tagger, "window", None)
+                    if not confirm_yes_no(api.logger, parent, title, desc):
+                        return
+
+            write_error = write_lyrics_file(api, file_lrc, file_lyrics)
+            if write_error is not None:
+                parent = getattr(api.tagger, "window", None)
+                show_critical(
+                    api.logger,
+                    parent,
+                    "Failed to Save LRC File",
+                    f"Could not save lyrics file:\n\n{file_lrc}\n\n"
+                    f"Error: {write_error}",
+                )
+            else:
+                # Keep one file per song: a new .lrc retires an old .txt.
+                remove_lrc_files(api, base_path, file_lrc)
 
         api.logger.debug(
             f'{plugin_name(api)}: lyrics loaded for track "{metadata["title"]}" by {metadata["artist"]}'
@@ -191,7 +190,10 @@ def process_response(
 
     finally:
         if method == "get_on_save":
+            # Upstream re-saved the file here to embed the lyrics, and relied on
+            # that second save to clear the re-entry guard. Sidecar-only needs
+            # no second save, so clear the guard directly.
             for file in linked_files:
-                file.save()
+                state.files_processing.discard(file.filename)
 
         api.complete_album_task(album, task_id)

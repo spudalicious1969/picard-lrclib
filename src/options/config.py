@@ -14,16 +14,19 @@ class Option(NamedTuple):
 
 
 # All plugin options in display order.
+# Fork defaults (2026-11-16): fetch on SAVE (after Picard has moved the file
+# into the library), never on load; plain lyrics as .txt and instrumentals
+# skipped, matching what LRCGET writes for the rest of the library.
 OPTIONS: tuple[Option, ...] = (
     Option(
         "prefer_synced_lyrics", "Prefer synchronized lyrics over plain lyrics", True
     ),
     Option("get_on_load", "Search for lyrics when loading tracks", False),
-    Option("get_on_save", "Search for lyrics when saving files", False),
+    Option("get_on_save", "Search for lyrics when saving files", True),
     Option("auto_overwrite", "Auto overwrite existing lyrics", False),
-    Option("save_lrc_file", "Save .lrc file alongside audio files", False),
-    Option("ignore_instrumental", "Ignore instrumental lyrics", False),
-    Option("plain_as_txt", "Save plain lyrics as .txt", False),
+    Option("save_lrc_file", "Save .lrc file alongside audio files", True),
+    Option("ignore_instrumental", "Ignore instrumental lyrics", True),
+    Option("plain_as_txt", "Save plain lyrics as .txt", True),
 )
 
 
