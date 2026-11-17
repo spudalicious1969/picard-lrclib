@@ -1,7 +1,7 @@
 uuid = "f054665a-6ba2-49d1-938a-688c252b3597"
 name = "LRCLIB Lyrics"
 authors = ["Glicole"]
-description = """Fetch and embed lyrics from LRCLIB's crowdsourced database"""
+description = """Fetch lyrics from LRCLIB into .lrc/.txt sidecar files (sidecar-only fork: never embeds, never overwrites)"""
 api = ['3.0']
 license = "MIT"
 license_url = "https://opensource.org/licenses/MIT"
@@ -10,4 +10,4 @@ homepage = "https://github.com/izaz4141/picard-lrclib"
 report_bugs_to = "https://github.com/izaz4141/picard-lrclib/issues"
 categories = ["metadata"]
 min_python_version = "3.10"
-long_description = """Fetch and embed lyrics from LRCLIB's crowdsourced database **Automatic Integration:** Save lyrics to both audio file metadata _and_ .lrc sidecar files **Jellyfin/Plex Ready:** Generated .lrc files work seamlessly with media servers and Kodi **Configurable Workflow:** Toggle auto-fetching and .lrc file creation in plugin settings **Smart Fetch:** Prefers synchronized lyrics when available, falls back to plain text _Based on Dylancyclone's plugin_"""
+long_description = """Fetch lyrics from LRCLIB's crowdsourced database. **Sidecar-only fork:** lyrics go to .lrc (synced) or .txt (plain) next to the audio and never into its tags; automatic fetching never touches an existing sidecar **Jellyfin/Plex Ready:** Generated .lrc files work seamlessly with media servers and Kodi **Configurable Workflow:** Toggle auto-fetching in plugin settings **Smart Fetch:** Prefers synchronized lyrics when available, falls back to plain text _Based on Dylancyclone's plugin_"""
